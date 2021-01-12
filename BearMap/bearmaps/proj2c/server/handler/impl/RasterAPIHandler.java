@@ -52,20 +52,6 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
     }
 
     /**
-     * Takes a user query and finds the grid of images that best matches the query. These
-     * images will be combined into one big image (rastered) by the front end. <br>
-     *
-     *     The grid of images must obey the following properties, where image in the
-     *     grid is referred to as a "tile".
-     *     <ul>
-     *         <li>The tiles collected must cover the most longitudinal distance per pixel
-     *         (LonDPP) possible, while still covering less than or equal to the amount of
-     *         longitudinal distance per pixel in the query box for the user viewport size. </li>
-     *         <li>Contains all tiles that intersect the query bounding box that fulfill the
-     *         above condition.</li>
-     *         <li>The tiles must be arranged in-order to reconstruct the full image.</li>
-     *     </ul>
-     *
      * @param requestParams Map of the HTTP GET request's query parameters - the query box and
      *               the user viewport width and height.
      *
@@ -84,11 +70,7 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        // requestParams contain ullon, ullat, lrlon, lrlat, width, height;
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        // System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in " + "your browser.");
         double ullon = requestParams.get("ullon");
         double ullat = requestParams.get("ullat");
         double lrlon = requestParams.get("lrlon");
@@ -116,8 +98,6 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         System.out.println("col and row has " + N +"grids");
         double widthPerGrid = Math.abs(ROOT_LRLON - ROOT_ULLON) / N;
         // rasterULLon 为ullon所在格栅的起始UnitUllon， 其他同理
-        // double resultUllon = ((int)((ullon - ROOT_ULLON) / widthPerGrid)) * widthPerGrid + ROOT_ULLON;
-        // double resultLrlon = ((int)((lrlon - ROOT_ULLON) / widthPerGrid)) * widthPerGrid + ROOT_ULLON + widthPerGrid;
 
         double ulLonPos = Math.floor(Math.abs((ullon - ROOT_ULLON)) / widthPerGrid);
         System.out.println(ulLonPos);
@@ -132,13 +112,13 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
 
         double heightPerGrid = Math.abs(ROOT_ULLAT - ROOT_LRLAT) / N;
         double ulLatPos = Math.floor(Math.abs(ROOT_ULLAT - ullat) / heightPerGrid);
-        System.out.println(ulLatPos);
+
         double resultUllat = ROOT_ULLAT - ulLatPos * heightPerGrid;
         if (ullat >= ROOT_ULLAT - heightPerGrid)
             resultUllat = ROOT_ULLAT;
-        // double resultLrlat = ROOT_ULLAT - (Math.ceil(Math.abs((lrlat - ROOT_ULLAT)) / heightPerGrid) * heightPerGrid);
+
         double lrLatPos = Math.ceil(Math.abs((lrlat - ROOT_ULLAT)) / heightPerGrid);
-        System.out.println(lrLatPos);
+
         double resultLrlat = ROOT_ULLAT - lrLatPos * heightPerGrid;
         if (lrlat <= ROOT_LRLAT)
             resultLrlat = ROOT_LRLAT;
@@ -150,11 +130,6 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
         // Last step, put the string[][] of images
 
         // 4^D images totally
-        /*int lx = (int)Math.round((resultUllon - ROOT_ULLON) / widthPerGrid); // leftX
-        int rx = (int)Math.round((resultLrlon - ROOT_ULLON) / widthPerGrid); // rightX
-        int ly = (int)Math.round((ROOT_ULLAT - resultLrlat) / heightPerGrid);
-        int uy = (int)Math.round((ROOT_ULLAT - resultUllat) / heightPerGrid);*/
-
         int w = (int)(lrLonPos - ulLonPos);
         int h = (int)(lrLatPos - ulLatPos);
         System.out.println(w + "," + h + "-----> image index");
